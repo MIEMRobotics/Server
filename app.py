@@ -1,7 +1,9 @@
 from flask import Flask, request
 from flask_uploads import UploadSet, IMAGES, AUDIO, configure_uploads
-from flask_socketio import SocketIO, join_room, emit
+from flask_socketio import SocketIO, join_room, emit, send
 import speech_recognition
+from utils.uploader import *
+from utils.speech import *
 
 path_to_images = r'./tests/responses'
 path_to_audios = r'./tests/responses'
@@ -33,22 +35,14 @@ def upload(file_type: str):
     return "Bad"
 
 
-def classify_image(image):
-    return image
-
-
-def detect_image(image):
-    return image
-
-
-def audio_to_text(audio):
-    text = recognizer.recognize_google(audio)
-    return text
-
-
 @app.route('/')
 def hello_world():
     return 'Hello, World!'
+
+
+@socketio.on("connect")
+def connect():
+    return True
 
 
 @app.route('/upload_image', methods=['POST'])
@@ -61,12 +55,47 @@ def upload_audio():
     return upload("audio")
 
 
-@socketio.on("detect")
-def detect(data):
-    image = data['image']
-    detected = detect_image(image)
-    emit('detected', {'image': detected})
+@socketio.on('test')
+def test(data):
+    return data
+
+
+@socketio.on('upload_image')
+def upload_image(image):
+    return upload("image")
+
+
+@socketio.on("upload_audio")
+def upload_audio(audio):
+    return upload("audio")
+
+
+@socketio.on("give_answer")
+def get_answer(data):
+    question = audio_to_text(bytearray.fromhex(data['audio']))
+    answer = question_to_answer(question)
+
+    if data['return_type'] == "text":
+        return answer
+
+    elif data['return_type'] == "audio":
+        audio = text_to_audio(answer)
+        return bytearray.hex(audio)
+    else:
+        return None
+
+
+@socketio.on("audio_to_text")
+def convert(audio):
+    text = audio_to_text(bytearray.fromhex(audio))
+    return text
+
+
+@socketio.on("text_to_audio")
+def convert(text):
+    audio = text_to_audio(text)
+    return bytes.hex(audio)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    socketio.run(host='0.0.0.0', port=5000)
