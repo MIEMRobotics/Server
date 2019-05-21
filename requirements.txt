@@ -1,0 +1,9 @@
+scipy
+numpy
+opencv-python
+flask
+flask_uploads
+flask_socketio
+apiai
+google-cloud-texttospeech
+socketIO_client
