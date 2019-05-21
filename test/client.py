@@ -35,8 +35,6 @@ def get_text_data():
 if __name__ == '__main__':
 
     with SocketIO("127.0.0.1", 5000) as client:
-        client.emit("connect", on_connect)
-        client.wait_for_callbacks(1)
 
         client.emit("text_to_audio", get_text_data(), on_audio)
         client.wait_for_callbacks(2)
