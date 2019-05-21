@@ -1,5 +1,5 @@
-import cv2
 from scipy.io import wavfile
+import cv2
 
 
 def upload_audio(path, audio):
